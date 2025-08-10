@@ -55,11 +55,14 @@ func main() {
 	repo := criarRepo()
 
 	router := http.NewServeMux()
-	router.HandleFunc("GET /v1/filmes", repo.Listar)
+	router.HandleFunc("GET /filmes", repo.Listar)
+
+	v1 := http.NewServeMux()
+	v1.Handle("/v1/", http.StripPrefix("/v1", router))
 
 	server := http.Server{
 		Addr:    ":8081",
-		Handler: router,
+		Handler: v1,
 	}
 
 	server.ListenAndServe()
