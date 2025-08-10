@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -16,7 +17,7 @@ type Filme struct {
 }
 
 type RepositorioFilmes struct {
-	dados map[string]Filme
+	Dados map[string]Filme
 }
 
 func criarRepo() *RepositorioFilmes {
@@ -36,11 +37,25 @@ func criarRepo() *RepositorioFilmes {
 	addFilme("Mad Max: Estrada da Fúria", 120, []string{"Ação", "Ficção científica"})
 	addFilme("Django Livre", 165, []string{"Ação", "Faroeste"})
 
-	return &RepositorioFilmes{dados: filmes}
+	return &RepositorioFilmes{Dados: filmes}
+}
+
+func (repo *RepositorioFilmes) Listar(w http.ResponseWriter, r *http.Request) {
+	filmes := make([]Filme, 0, len(repo.Dados))
+	for _, filme := range repo.Dados {
+		filmes = append(filmes, filme)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(filmes)
 }
 
 func main() {
+	repo := criarRepo()
+
 	router := http.NewServeMux()
+	router.HandleFunc("GET /v1/filmes", repo.Listar)
 
 	server := http.Server{
 		Addr:    ":8081",
