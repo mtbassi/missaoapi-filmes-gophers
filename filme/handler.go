@@ -87,3 +87,13 @@ func (h *Handler) Cadastrar(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(filme)
 }
+
+func (h *Handler) Deletar(w http.ResponseWriter, r *http.Request) {
+	logger := r.Context().Value("logger").(*slog.Logger)
+
+	delete(h.Repo.Dados, r.PathValue("id"))
+
+	logger.With(slog.String("evento", "deletar")).
+		Info("Operação realizada com sucesso")
+	w.WriteHeader(http.StatusNoContent)
+}
