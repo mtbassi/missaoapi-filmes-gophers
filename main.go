@@ -16,6 +16,7 @@ func main() {
 	router.HandleFunc("GET /filmes", handler.Listar)
 	router.HandleFunc("GET /filmes/{id}", handler.ListarPeloId)
 	router.HandleFunc("POST /filmes", handler.Cadastrar)
+	router.HandleFunc("DELETE /filmes/{id}", handler.Deletar)
 
 	v1 := http.NewServeMux()
 	v1.Handle("/v1/", http.StripPrefix("/v1", router))
