@@ -18,7 +18,7 @@ type RepositorioFilmes struct {
 	Dados map[string]Filme
 }
 
-func CriarRepo() *RepositorioFilmes {
+func criarRepo() *RepositorioFilmes {
 	filmes := map[string]Filme{}
 
 	addFilme := func(nome string, duracao int, categorias []string) {
