@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 )
 
@@ -43,10 +44,17 @@ func (h *Handler) ListarPeloId(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Cadastrar(w http.ResponseWriter, r *http.Request) {
-	var novoFilme FilmeRequest
-	err := json.NewDecoder(r.Body).Decode(&novoFilme)
+	var novoFilme FilmePost
+	errJson := json.NewDecoder(r.Body).Decode(&novoFilme)
+	if errJson != nil {
+		retornarErroCampo(w, "json", "JSON inválido")
+		return
+	}
+
+	validate := validator.New()
+	err := validate.Struct(novoFilme)
 	if err != nil {
-		http.Error(w, "Request inválido", http.StatusBadRequest)
+		mapearCamposErros(w, err)
 		return
 	}
 

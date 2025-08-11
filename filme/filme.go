@@ -14,10 +14,10 @@ type Filme struct {
 	CriadoEm   time.Time `json:"criadoEm"`
 }
 
-type FilmeRequest struct {
-	Filme      string   `json:"filme"`
-	Duracao    int      `json:"duracao"`
-	Categorias []string `json:"categorias"`
+type FilmePost struct {
+	Filme      string   `json:"filme" validate:"required"`
+	Duracao    int      `json:"duracao" validate:"required"`
+	Categorias []string `json:"categorias" validate:"required"`
 }
 
 type RepositorioFilmes struct {
