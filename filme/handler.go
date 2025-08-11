@@ -3,6 +3,9 @@ package filme
 import (
 	"encoding/json"
 	"net/http"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -36,5 +39,28 @@ func (h *Handler) ListarPeloId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(filme)
+}
+
+func (h *Handler) Cadastrar(w http.ResponseWriter, r *http.Request) {
+	var novoFilme FilmeRequest
+	err := json.NewDecoder(r.Body).Decode(&novoFilme)
+	if err != nil {
+		http.Error(w, "Request inválido", http.StatusBadRequest)
+		return
+	}
+
+	filme := Filme{
+		ID:         uuid.New(),
+		Filme:      novoFilme.Filme,
+		Duracao:    novoFilme.Duracao,
+		Categorias: novoFilme.Categorias,
+		CriadoEm:   time.Now(),
+	}
+	h.Repo.Dados[filme.ID.String()] = filme
+
+	w.Header().Set("Location", "/filmes/"+filme.ID.String())
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(filme)
 }

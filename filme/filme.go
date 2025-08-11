@@ -14,6 +14,12 @@ type Filme struct {
 	CriadoEm   time.Time `json:"criadoEm"`
 }
 
+type FilmeRequest struct {
+	Filme      string   `json:"filme"`
+	Duracao    int      `json:"duracao"`
+	Categorias []string `json:"categorias"`
+}
+
 type RepositorioFilmes struct {
 	Dados map[string]Filme
 }
