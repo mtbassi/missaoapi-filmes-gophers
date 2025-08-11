@@ -2,6 +2,7 @@ package filme
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -32,21 +33,31 @@ func (h *Handler) Listar(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ListarPeloId(w http.ResponseWriter, r *http.Request) {
-	filme, exists := h.Repo.Dados[r.PathValue("id")]
+	logger := r.Context().Value("logger").(*slog.Logger)
+
+	id := r.PathValue("id")
+	filme, exists := h.Repo.Dados[id]
 
 	w.Header().Set("Content-Type", "application/json")
 	if !exists {
+		logger.With(slog.String("evento", "listar_pelo_id")).
+			Info("Nenhum filme encontrado com o id " + id)
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
+	logger.With(slog.String("evento", "listar_pelo_id")).
+		Info("Filme " + filme.Filme + " encontrado pelo id " + filme.ID.String())
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(filme)
 }
 
 func (h *Handler) Cadastrar(w http.ResponseWriter, r *http.Request) {
+	logger := r.Context().Value("logger").(*slog.Logger)
+
 	var novoFilme FilmePost
 	errJson := json.NewDecoder(r.Body).Decode(&novoFilme)
 	if errJson != nil {
+		logger.Error("Falha na desserialização de JSON")
 		retornarErroCampo(w, "json", "JSON inválido")
 		return
 	}
@@ -54,6 +65,7 @@ func (h *Handler) Cadastrar(w http.ResponseWriter, r *http.Request) {
 	validate := validator.New()
 	err := validate.Struct(novoFilme)
 	if err != nil {
+		logger.Error("Falha na validação de campos")
 		mapearCamposErros(w, err)
 		return
 	}
@@ -66,6 +78,9 @@ func (h *Handler) Cadastrar(w http.ResponseWriter, r *http.Request) {
 		CriadoEm:   time.Now(),
 	}
 	h.Repo.Dados[filme.ID.String()] = filme
+
+	logger.With(slog.String("evento", "cadastro_filme")).
+		Info("Filme cadastrado com sucesso")
 
 	w.Header().Set("Location", "/filmes/"+filme.ID.String())
 	w.Header().Set("Content-Type", "application/json")
