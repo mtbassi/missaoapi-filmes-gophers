@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/mtbassi/missaoapi-filmes-gophers/filme"
+	"github.com/mtbassi/missaoapi-filmes-gophers/middleware"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 
 	server := http.Server{
 		Addr:    ":8081",
-		Handler: v1,
+		Handler: middleware.Logging(v1),
 	}
 
 	server.ListenAndServe()
