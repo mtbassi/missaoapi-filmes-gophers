@@ -1,14 +1,23 @@
 package middleware
 
 import (
-	"log"
+	"context"
+	"log/slog"
 	"net/http"
+	"os"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type wrappedWriter struct {
 	http.ResponseWriter
 	statusCode int
+}
+
+func CriarLogger() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	slog.SetDefault(logger)
 }
 
 func (w *wrappedWriter) WriteHeader(statusCode int) {
@@ -25,8 +34,29 @@ func Logging(next http.Handler) http.Handler {
 			statusCode:     http.StatusOK,
 		}
 
-		next.ServeHTTP(wrapped, r)
+		traceID := uuid.New().String()
+		logger := slog.With(
+			slog.String("trace_id", traceID),
+		)
 
-		log.Println(wrapped.statusCode, r.Method, r.URL.Path, time.Since(start))
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, "logger", logger)
+		next.ServeHTTP(wrapped, r.WithContext(ctx))
+
+		logger.LogAttrs(
+			context.Background(),
+			slog.LevelInfo,
+			"Info response",
+			slog.Group(
+				"request",
+				slog.Int("status_code", wrapped.statusCode),
+				slog.String("method", r.Method),
+				slog.String("path", r.URL.Path),
+				slog.String("host", r.Host),
+				slog.String("ip", r.RemoteAddr),
+				slog.String("ua", r.UserAgent()),
+				slog.Duration("duration", time.Since(start)),
+			),
+		)
 	})
 }
