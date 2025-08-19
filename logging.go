@@ -101,17 +101,3 @@ func logFromContext(ctx context.Context) *slog.Logger {
 	}
 	return slog.Default()
 }
-
-func TraceIDFrom(ctx context.Context) string {
-	if t, ok := ctx.Value(traceIDKey).(string); ok {
-		return t
-	}
-	return ""
-}
-
-func UserIDFrom(ctx context.Context) string {
-	if u, ok := ctx.Value(userIDKey).(string); ok {
-		return u
-	}
-	return ""
-}
