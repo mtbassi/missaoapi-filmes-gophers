@@ -33,10 +33,11 @@ func (s *movieStore) create(ctx context.Context, in MovieCreate) (Movie, error) 
 		return Movie{}, errors.New(m)
 	}
 	m := Movie{
-		ID:        uuid.New().String(),
-		Name:      strings.TrimSpace(in.Name),
-		Duration:  in.Duration,
-		CreatedAt: time.Now()}
+		ID:         uuid.New().String(),
+		Name:       strings.TrimSpace(in.Name),
+		Duration:   in.Duration,
+		Categories: in.Categories,
+		CreatedAt:  time.Now()}
 	s.items[m.ID] = m
 	logger.Info(
 		"movie created",
@@ -81,6 +82,9 @@ func (s *movieStore) patch(ctx context.Context, id string, in MoviePatch) (Movie
 	}
 	if in.Duration != nil {
 		m.Duration = *in.Duration
+	}
+	if in.Categories != nil {
+		m.Categories = *in.Categories
 	}
 	s.items[id] = m
 	logger.Info(
