@@ -13,13 +13,55 @@ import (
 )
 
 type movieStore struct {
-	mu     sync.RWMutex
-	autoID string
-	items  map[string]Movie
+	mu    sync.RWMutex
+	items map[string]Movie
 }
 
 func newMovieStore() *movieStore {
-	return &movieStore{items: make(map[string]Movie)}
+	s := &movieStore{
+		items: make(map[string]Movie),
+	}
+	initialMovies := []Movie{
+		{
+			ID:         uuid.New().String(),
+			Name:       "Matrix",
+			Duration:   136,
+			Categories: []string{"Sci-Fi", "Action"},
+			CreatedAt:  time.Now(),
+		},
+		{
+			ID:         uuid.New().String(),
+			Name:       "Click",
+			Duration:   107,
+			Categories: []string{"Comedy", "Drama", "Fantasy"},
+			CreatedAt:  time.Now(),
+		},
+		{
+			ID:         uuid.New().String(),
+			Name:       "Forrest Gump",
+			Duration:   142,
+			Categories: []string{"Drama", "Romance"},
+			CreatedAt:  time.Now(),
+		},
+		{
+			ID:         uuid.New().String(),
+			Name:       "As Aventuras de Huckleberry Finn",
+			Duration:   108,
+			Categories: []string{"Adventure", "Classic"},
+			CreatedAt:  time.Now(),
+		},
+		{
+			ID:         uuid.New().String(),
+			Name:       "Interestelar",
+			Duration:   169,
+			Categories: []string{"Sci-Fi", "Drama"},
+			CreatedAt:  time.Now(),
+		},
+	}
+	for _, m := range initialMovies {
+		s.items[m.ID] = m
+	}
+	return s
 }
 
 func (s *movieStore) create(ctx context.Context, in MovieCreate) (Movie, error) {
