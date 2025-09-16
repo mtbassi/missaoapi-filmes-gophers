@@ -8,6 +8,8 @@ import (
 
 func main() {
 	router := http.NewServeMux()
+	router.HandleFunc("GET /health", healthCheck)
+
 	router.HandleFunc("GET /movies", handleListMovies)
 	router.HandleFunc("GET /movies/{id}", handleGetMovie)
 	router.HandleFunc("POST /movies", handleCreateMovie)

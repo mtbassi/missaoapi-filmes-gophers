@@ -59,7 +59,7 @@ func Logging(next http.Handler) http.Handler {
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, loggerKey, logger)
 
-		logger.Info("request_in",
+		logger.Info("request_in < ",
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),
 			slog.String("host", r.Host),
@@ -71,7 +71,7 @@ func Logging(next http.Handler) http.Handler {
 
 		next.ServeHTTP(wrapped, r.WithContext(ctx))
 
-		logger.Info("request_out",
+		logger.Info("request_out >",
 			slog.Int("status_code", wrapped.statusCode),
 			slog.Int("size", wrapped.size),
 			slog.Duration("duration", time.Since(start)),
