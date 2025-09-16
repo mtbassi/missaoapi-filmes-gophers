@@ -2,11 +2,17 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 )
 
 func main() {
+	config, err := LoadConfig()
+	if err != nil {
+		panic(err)
+	}
+
 	router := http.NewServeMux()
 	router.HandleFunc("GET /health", healthCheck)
 
@@ -20,10 +26,16 @@ func main() {
 	v1.Handle("/v1/", http.StripPrefix("/v1", router))
 
 	server := http.Server{
-		Addr:    ":8081",
-		Handler: Logging(v1),
+		Addr:              fmt.Sprintf(":%d", config.Server.Port),
+		Handler:           Logging(v1),
+		ReadTimeout:       config.Server.ReadTimeout,
+		ReadHeaderTimeout: config.Server.ReadHeaderTimeout,
+		WriteTimeout:      config.Server.WriteTimeout,
+		IdleTimeout:       config.Server.IdleTimeout,
 	}
 
-	slog.Log(context.Background(), slog.LevelInfo, "starting server")
-	server.ListenAndServe()
+	slog.InfoContext(context.Background(), "starting server", "app", config.App.Name, "version", config.App.Version)
+	if err := server.ListenAndServe(); err != nil {
+		panic(err)
+	}
 }
