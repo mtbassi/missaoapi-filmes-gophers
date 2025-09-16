@@ -23,39 +23,54 @@ func newMovieStore() *movieStore {
 	}
 	initialMovies := []Movie{
 		{
-			ID:         uuid.New().String(),
-			Name:       "Matrix",
-			Duration:   136,
-			Categories: []string{"Sci-Fi", "Action"},
-			CreatedAt:  time.Now(),
+			ID:          uuid.New().String(),
+			Name:        "Matrix",
+			Duration:    136,
+			ReleaseYear: 1999,
+			Director:    "Lana Wachowski",
+			Rating:      8.7,
+			Categories:  []string{"Sci-Fi", "Action"},
+			CreatedAt:   time.Now(),
 		},
 		{
-			ID:         uuid.New().String(),
-			Name:       "Click",
-			Duration:   107,
-			Categories: []string{"Comedy", "Drama", "Fantasy"},
-			CreatedAt:  time.Now(),
+			ID:          uuid.New().String(),
+			Name:        "Click",
+			Duration:    107,
+			ReleaseYear: 2006,
+			Director:    "Frank Coraci",
+			Rating:      6.4,
+			Categories:  []string{"Comedy", "Drama", "Fantasy"},
+			CreatedAt:   time.Now(),
 		},
 		{
-			ID:         uuid.New().String(),
-			Name:       "Forrest Gump",
-			Duration:   142,
-			Categories: []string{"Drama", "Romance"},
-			CreatedAt:  time.Now(),
+			ID:          uuid.New().String(),
+			Name:        "Forrest Gump",
+			Duration:    142,
+			ReleaseYear: 1994,
+			Director:    "Robert Zemeckis",
+			Rating:      8.8,
+			Categories:  []string{"Drama", "Romance"},
+			CreatedAt:   time.Now(),
 		},
 		{
-			ID:         uuid.New().String(),
-			Name:       "As Aventuras de Huckleberry Finn",
-			Duration:   108,
-			Categories: []string{"Adventure", "Classic"},
-			CreatedAt:  time.Now(),
+			ID:          uuid.New().String(),
+			Name:        "As Aventuras de Huckleberry Finn",
+			Duration:    108,
+			ReleaseYear: 1960,
+			Director:    "Michael Curtiz",
+			Rating:      6.2,
+			Categories:  []string{"Adventure", "Classic"},
+			CreatedAt:   time.Now(),
 		},
 		{
-			ID:         uuid.New().String(),
-			Name:       "Interestelar",
-			Duration:   169,
-			Categories: []string{"Sci-Fi", "Drama"},
-			CreatedAt:  time.Now(),
+			ID:          uuid.New().String(),
+			Name:        "Interestelar",
+			Duration:    169,
+			ReleaseYear: 2014,
+			Director:    "Christopher Nolan",
+			Rating:      8.7,
+			Categories:  []string{"Sci-Fi", "Drama"},
+			CreatedAt:   time.Now(),
 		},
 	}
 	for _, m := range initialMovies {
@@ -75,11 +90,15 @@ func (s *movieStore) create(ctx context.Context, in MovieCreate) (Movie, error) 
 		return Movie{}, errors.New(m)
 	}
 	m := Movie{
-		ID:         uuid.New().String(),
-		Name:       strings.TrimSpace(in.Name),
-		Duration:   in.Duration,
-		Categories: in.Categories,
-		CreatedAt:  time.Now()}
+		ID:          uuid.New().String(),
+		Name:        strings.TrimSpace(in.Name),
+		Duration:    in.Duration,
+		ReleaseYear: in.ReleaseYear,
+		Director:    in.Director,
+		Rating:      in.Rating,
+		Categories:  in.Categories,
+		CreatedAt:   time.Now(),
+	}
 	s.items[m.ID] = m
 	logger.Info(
 		"movie created",
@@ -125,9 +144,19 @@ func (s *movieStore) patch(ctx context.Context, id string, in MoviePatch) (Movie
 	if in.Duration != nil {
 		m.Duration = *in.Duration
 	}
+	if in.ReleaseYear != nil {
+		m.ReleaseYear = *in.ReleaseYear
+	}
+	if in.Director != nil {
+		m.Director = strings.TrimSpace(*in.Director)
+	}
+	if in.Rating != nil {
+		m.Rating = *in.Rating
+	}
 	if in.Categories != nil {
 		m.Categories = *in.Categories
 	}
+	m.ModifiedAt = time.Now()
 	s.items[id] = m
 	logger.Info(
 		"movie updated",
