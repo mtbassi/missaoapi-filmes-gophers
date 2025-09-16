@@ -2,8 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 )
+
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
+	if err := validate.RegisterValidation("yearValid", yearValid); err != nil {
+		panic(fmt.Sprintf("failed to register yearValid validation: %v", err))
+	}
+}
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
@@ -15,6 +27,10 @@ func handleCreateMovie(w http.ResponseWriter, r *http.Request) {
 	var in MovieCreate
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid json"})
+		return
+	}
+	if err := validate.Struct(in); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 	m, err := store.create(r.Context(), in)
@@ -53,6 +69,10 @@ func handlePatchMovie(w http.ResponseWriter, r *http.Request) {
 	var in MoviePatch
 	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid json"})
+		return
+	}
+	if err := validate.Struct(in); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 	m, err := store.patch(r.Context(), id, in)
