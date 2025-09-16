@@ -1,6 +1,10 @@
 package main
 
-import "time"
+import (
+	"time"
+
+	"github.com/go-playground/validator/v10"
+)
 
 type Movie struct {
 	ID          string    `json:"id"`
@@ -15,19 +19,25 @@ type Movie struct {
 }
 
 type MovieCreate struct {
-	Name        string   `json:"name"`
-	Duration    int      `json:"duration"`
-	ReleaseYear int      `json:"release_year"`
-	Director    string   `json:"director"`
-	Rating      float64  `json:"rating"`
+	Name        string   `json:"name" validate:"required,min=3,max=150"`
+	Duration    int      `json:"duration" validate:"required,min=15,max=360"`
+	ReleaseYear int      `json:"release_year" validate:"required,yearValid"`
+	Director    string   `json:"director" validate:"required,min=5,max=30"`
+	Rating      float64  `json:"rating" validate:"required,min=1,max=5"`
 	Categories  []string `json:"categories"`
 }
 
 type MoviePatch struct {
-	Name        *string   `json:"name,omitempty"`
-	Duration    *int      `json:"duration,omitempty"`
-	ReleaseYear *int      `json:"release_year,omitempty"`
-	Director    *string   `json:"director,omitempty"`
-	Rating      *float64  `json:"rating,omitempty"`
+	Name        *string   `json:"name,omitempty" validate:"omitempty,min=3,max=150"`
+	Duration    *int      `json:"duration,omitempty" validate:"omitempty,min=15,max=360"`
+	ReleaseYear *int      `json:"release_year,omitempty" validate:"omitempty,yearValid"`
+	Director    *string   `json:"director,omitempty" validate:"omitempty,min=5,max=30"`
+	Rating      *float64  `json:"rating,omitempty" validate:"omitempty,min=1,max=5"`
 	Categories  *[]string `json:"categories,omitempty"`
+}
+
+func yearValid(fl validator.FieldLevel) bool {
+	year := fl.Field().Int()
+	currentYear := int64(time.Now().Year())
+	return year >= 1888 && year <= currentYear
 }
