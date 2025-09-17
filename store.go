@@ -21,9 +21,13 @@ func newMovieStore() *movieStore {
 	s := &movieStore{
 		items: make(map[string]Movie),
 	}
+
+	matrixID := uuid.New().String()
+	clickID := uuid.New().String()
+
 	initialMovies := []Movie{
 		{
-			ID:          uuid.New().String(),
+			ID:          matrixID,
 			Name:        "Matrix",
 			Duration:    136,
 			ReleaseYear: 1999,
@@ -31,9 +35,83 @@ func newMovieStore() *movieStore {
 			Rating:      4.4,
 			Categories:  []string{"Sci-Fi", "Action"},
 			CreatedAt:   time.Now(),
+			Comments: []Comment{
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "This film doesn't age, it will be contemporary even in 2030 or 2040. Wachowski's best one, by far.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "What if I told you the Matrix is not a Sci-Fi but a Documentary movie?",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "Right there with Seven and Silence of the Lambs for me.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "True cinematic achievement.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "This was a real change in filmmaking. Like watching it again in 2020, i.e. after 21 years and it still feels fresh. Iconic scenes are still having benchmarks setting up.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "Somewhere along the line, someone planning this film forgot to put in a plot. It's worse than \"Twister\" in that respect.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "Ok, I'm getting sick of comments saying stuff like \"The Matrix is the greatest film EVER MADE!\"",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "The Matrix is one of the best classic sci-fi action film ever.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "Visually stunning and way ahead of its time.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "The action scenes are legendary, but the dialogue can be a bit stiff.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "I didn't understand half of it, but I still loved it.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: matrixID,
+					UserID:  uuid.New().String(),
+					Content: "A mind-bending movie that changed cinema forever.",
+				},
+			},
 		},
 		{
-			ID:          uuid.New().String(),
+			ID:          clickID,
 			Name:        "Click",
 			Duration:    107,
 			ReleaseYear: 2006,
@@ -41,6 +119,26 @@ func newMovieStore() *movieStore {
 			Rating:      3.5,
 			Categories:  []string{"Comedy", "Drama", "Fantasy"},
 			CreatedAt:   time.Now(),
+			Comments: []Comment{
+				{
+					ID:      uuid.New().String(),
+					MovieID: clickID,
+					UserID:  uuid.New().String(),
+					Content: "Starts off as a silly comedy, but the ending really got me emotional.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: clickID,
+					UserID:  uuid.New().String(),
+					Content: "Classic Adam Sandler: funny, over the top, and unexpectedly touching.",
+				},
+				{
+					ID:      uuid.New().String(),
+					MovieID: clickID,
+					UserID:  uuid.New().String(),
+					Content: "The magic remote is a great idea, but the story drags in the middle.",
+				},
+			},
 		},
 		{
 			ID:          uuid.New().String(),
@@ -51,6 +149,7 @@ func newMovieStore() *movieStore {
 			Rating:      4.5,
 			Categories:  []string{"Drama", "Romance"},
 			CreatedAt:   time.Now(),
+			Comments:    []Comment{},
 		},
 		{
 			ID:          uuid.New().String(),
@@ -61,6 +160,7 @@ func newMovieStore() *movieStore {
 			Rating:      3.4,
 			Categories:  []string{"Adventure", "Classic"},
 			CreatedAt:   time.Now(),
+			Comments:    []Comment{},
 		},
 		{
 			ID:          uuid.New().String(),
@@ -71,6 +171,7 @@ func newMovieStore() *movieStore {
 			Rating:      4.4,
 			Categories:  []string{"Sci-Fi", "Drama"},
 			CreatedAt:   time.Now(),
+			Comments:    []Comment{},
 		},
 	}
 	for _, m := range initialMovies {
@@ -89,6 +190,9 @@ func (s *movieStore) create(ctx context.Context, in MovieCreate) (Movie, error) 
 		)
 		return Movie{}, errors.New(m)
 	}
+	if in.Comments == nil {
+		in.Comments = []Comment{}
+	}
 	m := Movie{
 		ID:          uuid.New().String(),
 		Name:        strings.TrimSpace(in.Name),
@@ -97,6 +201,7 @@ func (s *movieStore) create(ctx context.Context, in MovieCreate) (Movie, error) 
 		Director:    in.Director,
 		Rating:      in.Rating,
 		Categories:  in.Categories,
+		Comments:    in.Comments,
 		CreatedAt:   time.Now(),
 	}
 	s.items[m.ID] = m
