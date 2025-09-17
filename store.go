@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -213,21 +214,35 @@ func (s *movieStore) create(ctx context.Context, in MovieCreate) (Movie, error) 
 	return m, nil
 }
 
-func (s *movieStore) get(id string) (Movie, bool) {
+func (s *movieStore) get(id string, page, pageSize int) (Movie, Pagination, bool) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	m, ok := s.items[id]
-	return m, ok
+	if !ok {
+		return Movie{}, Pagination{}, false
+	}
+	//Ordena comentários por data criação
+	sort.Slice(m.Comments, func(i, j int) bool {
+		return m.Comments[i].CreatedAt.After(m.Comments[j].CreatedAt)
+	})
+	pagination := Pagination{}
+	m.Comments, pagination = paginateComments(m.Comments, page, pageSize)
+	return m, pagination, true
 }
 
-func (s *movieStore) list() []Movie {
+func (s *movieStore) list(page, pageSize int) ([]Movie, Pagination) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	res := make([]Movie, 0, len(s.items))
+	movies := make([]Movie, 0, len(s.items))
+	pagination := Pagination{}
 	for _, m := range s.items {
-		res = append(res, m)
+		m.Comments, pagination = paginateComments(m.Comments, page, pageSize)
+		movies = append(movies, m)
 	}
-	return res
+	sort.Slice(movies, func(i, j int) bool {
+		return movies[i].Name < movies[j].Name
+	})
+	return movies, pagination
 }
 
 func (s *movieStore) patch(ctx context.Context, id string, in MoviePatch) (Movie, error) {
@@ -289,6 +304,26 @@ func (s *movieStore) delete(ctx context.Context, id string) bool {
 		slog.String("status", "deleted"),
 	)
 	return true
+}
+
+func paginateComments(comments []Comment, page, pageSize int) ([]Comment, Pagination) {
+	total := len(comments)
+	start := (page - 1) * pageSize
+	if start > total {
+		start = total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	paged := comments[start:end]
+	pagination := Pagination{
+		PageComment:       page,
+		PageCommentSize:   pageSize,
+		TotalComment:      total,
+		TotalCommentPages: (total + pageSize - 1) / pageSize,
+	}
+	return paged, pagination
 }
 
 var store = newMovieStore()

@@ -6,6 +6,18 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+type Pagination struct {
+	PageComment       int `json:"page_comment"`
+	PageCommentSize   int `json:"page_comment_size"`
+	TotalComment      int `json:"total_comment"`
+	TotalCommentPages int `json:"total_comment_pages"`
+}
+
+type ApiResponse[T any] struct {
+	Data       T          `json:"data"`
+	Pagination Pagination `json:"pagination"`
+}
+
 type Movie struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`

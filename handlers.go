@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -42,8 +43,12 @@ func handleCreateMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleListMovies(w http.ResponseWriter, r *http.Request) {
-	ms := store.list()
-	writeJSON(w, http.StatusOK, ms)
+	m, pagination := store.list(getPagination(r))
+	res := ApiResponse[[]Movie]{
+		Data:       m,
+		Pagination: pagination,
+	}
+	writeJSON(w, http.StatusOK, res)
 }
 
 func handleGetMovie(w http.ResponseWriter, r *http.Request) {
@@ -52,12 +57,17 @@ func handleGetMovie(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
 		return
 	}
-	m, ok := store.get(id)
+	page, pageSize := getPagination(r)
+	m, pagination, ok := store.get(id, page, pageSize)
 	if !ok {
 		writeJSON(w, http.StatusNotFound, map[string]string{"error": "not found"})
 		return
 	}
-	writeJSON(w, http.StatusOK, m)
+	res := ApiResponse[Movie]{
+		Data:       m,
+		Pagination: pagination,
+	}
+	writeJSON(w, http.StatusOK, res)
 }
 
 func handlePatchMovie(w http.ResponseWriter, r *http.Request) {
@@ -95,4 +105,21 @@ func handleDeleteMovie(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func getPagination(r *http.Request) (page, pageSize int) {
+	pageStr := r.URL.Query().Get("page")
+	pageSizeStr := r.URL.Query().Get("page-size")
+	page = 1
+	if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+		page = p
+	}
+	pageSize = 5
+	if ps, err := strconv.Atoi(pageSizeStr); err == nil && ps > 0 {
+		pageSize = ps
+	}
+	if pageSize > 5 {
+		pageSize = 5
+	}
+	return page, pageSize
 }
